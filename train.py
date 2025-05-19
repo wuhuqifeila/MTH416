@@ -14,6 +14,17 @@ from models.resnet import ResNetTransfer as ResNetModel
 from utils.metrics import MetricsCalculator, print_metrics_summary
 from utils.early_stopping import EarlyStopping
 
+# 创建结果保存目录
+timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+save_dir = os.path.join('results', timestamp)
+os.makedirs(save_dir, exist_ok=True)
+
+# 保存训练配置
+with open(os.path.join(save_dir, 'config.txt'), 'w') as f:
+    for key, value in vars(Config).items():
+        if not key.startswith('__'):
+            f.write(f'{key}: {value}\n')
+
 class LabelSmoothingLoss(nn.Module):
     """标签平滑损失函数"""
     def __init__(self, smoothing=0.1):
@@ -102,7 +113,7 @@ def validate(model, val_loader, criterion, device, metrics_calculator):
     
     return metrics
 
-def train_model(model, train_loader, val_loader, num_epochs, device):
+def train_model(model, train_loader, val_loader, num_epochs, device, model_save_path):
     """训练模型"""
     # 设置损失函数（带标签平滑）
     criterion = LabelSmoothingLoss(smoothing=Config.LABEL_SMOOTHING)
@@ -124,24 +135,16 @@ def train_model(model, train_loader, val_loader, num_epochs, device):
     # 设置早停
     early_stopping = EarlyStopping(
         patience=Config.EARLY_STOPPING_PATIENCE,
-        mode='max'  # 监控验证准确率
+        mode='max',  # 监控验证准确率
+        verbose=True
     )
     
     # 创建指标计算器
     metrics_calculator = MetricsCalculator()
     
-    # 创建结果保存目录
-    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
-    save_dir = os.path.join('results', timestamp)
-    os.makedirs(save_dir, exist_ok=True)
-    
-    # 保存训练配置
-    with open(os.path.join(save_dir, 'config.txt'), 'w') as f:
-        for key, value in vars(Config).items():
-            if not key.startswith('__'):
-                f.write(f'{key}: {value}\n')
-
     best_val_acc = 0.0
+    best_model_state = None
+    
     for epoch in range(num_epochs):
         print(f'\nEpoch {epoch+1}/{num_epochs}')
         
@@ -166,16 +169,25 @@ def train_model(model, train_loader, val_loader, num_epochs, device):
         print('\nValidation Metrics:')
         print_metrics_summary(val_metrics)
         
-        # 保存混淆矩阵和PR曲线
+        # 保存混淆矩阵
         metrics_calculator.plot_confusion_matrix(
             val_metrics['confusion_matrix'],
             save_path=os.path.join(save_dir, f'confusion_matrix_epoch_{epoch+1}.png')
         )
         
+        # 保存最佳模型
+        if val_metrics['accuracy'] > best_val_acc:
+            best_val_acc = val_metrics['accuracy']
+            best_model_state = model.state_dict().copy()
+            torch.save(best_model_state, model_save_path)
+            print(f"\nBest model saved with validation accuracy: {best_val_acc:.4f}")
+        
         # 检查早停
         early_stopping(val_metrics['accuracy'], model)
         if early_stopping.early_stop:
             print("Early stopping triggered")
+            # 恢复最佳模型状态
+            model.load_state_dict(best_model_state)
             break
     
     return train_metrics, val_metrics
@@ -191,13 +203,13 @@ def main():
     # 训练CNN模型
     print("\nTraining Custom CNN Model...")
     cnn_model = CustomCNN().to(device)
+    cnn_save_path = os.path.join(save_dir, 'cnn_model.pth')
     cnn_train_metrics, cnn_val_metrics = train_model(
         cnn_model, train_loader, val_loader,
-        Config.NUM_EPOCHS, device
+        Config.NUM_EPOCHS, device, cnn_save_path
     )
     
     # 保存CNN模型结果
-    torch.save(cnn_model.state_dict(), os.path.join(save_dir, 'cnn_model.pth'))
     metrics_calculator = MetricsCalculator()
     metrics_calculator.plot_confusion_matrix(
         cnn_val_metrics['confusion_matrix'],
@@ -217,13 +229,13 @@ def main():
     # 训练ResNet模型
     print("\nTraining ResNet Model...")
     resnet_model = ResNetModel().to(device)
+    resnet_save_path = os.path.join(save_dir, 'resnet_model.pth')
     resnet_train_metrics, resnet_val_metrics = train_model(
         resnet_model, train_loader, val_loader,
-        Config.NUM_EPOCHS, device
+        Config.NUM_EPOCHS, device, resnet_save_path
     )
     
     # 保存ResNet模型结果
-    torch.save(resnet_model.state_dict(), os.path.join(save_dir, 'resnet_model.pth'))
     metrics_calculator.plot_confusion_matrix(
         resnet_val_metrics['confusion_matrix'],
         save_path=os.path.join(save_dir, 'resnet_confusion_matrix.png')
@@ -252,19 +264,18 @@ def main():
     }
     torch.save(history, os.path.join(save_dir, 'training_history.pth'))
     
-    # 生成训练报告
-    with open(os.path.join(save_dir, 'training_report.txt'), 'w') as f:
-        f.write("=== CNN Model ===\n")
-        f.write("\nFinal Training Metrics:\n")
-        f.write(metrics_to_string(cnn_train_metrics))
-        f.write("\nFinal Validation Metrics:\n")
-        f.write(metrics_to_string(cnn_val_metrics))
-        
-        f.write("\n\n=== ResNet Model ===\n")
-        f.write("\nFinal Training Metrics:\n")
-        f.write(metrics_to_string(resnet_train_metrics))
-        f.write("\nFinal Validation Metrics:\n")
-        f.write(metrics_to_string(resnet_val_metrics))
+    # 输出最终结果到控制台
+    print("\n=== CNN Model ===")
+    print("\nFinal Training Metrics:")
+    print_metrics_summary(cnn_train_metrics)
+    print("\nFinal Validation Metrics:")
+    print_metrics_summary(cnn_val_metrics)
+    
+    print("\n=== ResNet Model ===")
+    print("\nFinal Training Metrics:")
+    print_metrics_summary(resnet_train_metrics)
+    print("\nFinal Validation Metrics:")
+    print_metrics_summary(resnet_val_metrics)
 
 if __name__ == '__main__':
     main() 
