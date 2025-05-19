@@ -135,8 +135,7 @@ def train_model(model, train_loader, val_loader, num_epochs, device, model_save_
     # 设置早停
     early_stopping = EarlyStopping(
         patience=Config.EARLY_STOPPING_PATIENCE,
-        mode='max',  # 监控验证准确率
-        verbose=True
+        mode='max'  # 监控验证准确率
     )
     
     # 创建指标计算器
