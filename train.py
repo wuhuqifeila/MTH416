@@ -68,13 +68,23 @@ def train_epoch(model, train_loader, criterion, optimizer, device, metrics_calcu
         
         pbar.set_postfix({'loss': f'{loss.item():.4f}'})
     
+    # 转换为numpy数组
+    all_labels = np.array(all_labels)
+    all_preds = np.array(all_preds)
+    all_scores = np.array(all_scores)
+    
     # 计算训练指标
     metrics = metrics_calculator.calculate_all_metrics(
-        np.array(all_labels),
-        np.array(all_preds),
-        np.array(all_scores)
+        all_labels,
+        all_preds,
+        all_scores
     )
     metrics['loss'] = running_loss / len(train_loader)
+    
+    # 添加原始预测数据
+    metrics['y_true'] = all_labels
+    metrics['y_pred'] = all_preds
+    metrics['y_score'] = all_scores
     
     return metrics
 
@@ -103,13 +113,23 @@ def validate(model, val_loader, criterion, device, metrics_calculator):
             
             pbar.set_postfix({'loss': f'{loss.item():.4f}'})
     
+    # 转换为numpy数组
+    all_labels = np.array(all_labels)
+    all_preds = np.array(all_preds)
+    all_scores = np.array(all_scores)
+    
     # 计算验证指标
     metrics = metrics_calculator.calculate_all_metrics(
-        np.array(all_labels),
-        np.array(all_preds),
-        np.array(all_scores)
+        all_labels,
+        all_preds,
+        all_scores
     )
     metrics['loss'] = running_loss / len(val_loader)
+    
+    # 添加原始预测数据
+    metrics['y_true'] = all_labels
+    metrics['y_pred'] = all_preds
+    metrics['y_score'] = all_scores
     
     return metrics
 

@@ -1,0 +1,31 @@
+DATA_ROOT: dataset
+TRAIN_DIR: dataset\train
+VAL_DIR: dataset\val
+TEST_DIR: dataset\test
+NUM_CLASSES: 3
+IMAGE_SIZE: 224
+BATCH_SIZE: 32
+NUM_WORKERS: 0
+NUM_EPOCHS: 50
+LEARNING_RATE: 0.001
+WEIGHT_DECAY: 0.0002
+EARLY_STOPPING_PATIENCE: 10
+SCHEDULER_PATIENCE: 5
+SCHEDULER_FACTOR: 0.5
+MIN_LR: 1e-06
+LABEL_SMOOTHING: 0.1
+DROPOUT_RATE: 0.5
+DEVICE: cpu
+PIN_MEMORY: False
+PREFETCH_FACTOR: None
+PERSISTENT_WORKERS: False
+CLASS_WEIGHTS: [0.1, 3.0, 4.0]
+AUGMENTATION: {'random_rotate_degrees': 30, 'random_crop_scale': (0.7, 1.0), 'random_crop_ratio': (0.7, 1.3), 'brightness_jitter': 0.3, 'contrast_jitter': 0.3, 'random_erase_prob': 0.3, 'mixup_alpha': 0.3}
+METRICS: {'accuracy': True, 'precision': True, 'recall': True, 'f1': True, 'auc': True, 'confusion_matrix': True}
+TRANSFER: {'unfreeze_layers': 2, 'feature_extract': True, 'learning_rate_fc': 0.001, 'learning_rate_backbone': 0.0001, 'progressive_unfreeze': True, 'unfreeze_epoch': 5}
+SAVE_DIR: results
+CUSTOM_MODEL_PATH: results\custom_model.pth
+RESNET_MODEL_PATH: results\resnet_model.pth
+USE_INTEL_OPTIMIZATION: False
+RESNET_PRETRAINED: True
+RESNET_FREEZE_LAYERS: True
