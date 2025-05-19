@@ -13,6 +13,7 @@ from models.custom_cnn import CustomCNN
 from models.resnet import ResNetTransfer as ResNetModel
 from utils.metrics import MetricsCalculator, print_metrics_summary
 from utils.early_stopping import EarlyStopping
+from utils.losses import CombinedLoss
 
 # 创建结果保存目录
 timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
@@ -135,8 +136,12 @@ def validate(model, val_loader, criterion, device, metrics_calculator):
 
 def train_model(model, train_loader, val_loader, num_epochs, device, model_save_path):
     """训练模型"""
-    # 设置损失函数（带标签平滑）
-    criterion = LabelSmoothingLoss(smoothing=Config.LABEL_SMOOTHING)
+    # 设置损失函数
+    criterion = CombinedLoss(
+        alpha=Config.LOSS['focal_alpha'],
+        gamma=Config.LOSS['focal_gamma'],
+        smoothing=Config.LOSS['label_smoothing']
+    )
     
     # 设置优化器
     optimizer = optim.AdamW(
