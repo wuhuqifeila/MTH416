@@ -135,6 +135,12 @@ def train_model(model, train_loader, val_loader, num_epochs, device):
     save_dir = os.path.join('results', timestamp)
     os.makedirs(save_dir, exist_ok=True)
     
+    # 保存训练配置
+    with open(os.path.join(save_dir, 'config.txt'), 'w') as f:
+        for key, value in vars(Config).items():
+            if not key.startswith('__'):
+                f.write(f'{key}: {value}\n')
+
     best_val_acc = 0.0
     for epoch in range(num_epochs):
         print(f'\nEpoch {epoch+1}/{num_epochs}')
@@ -182,21 +188,83 @@ def main():
     # 获取数据加载器
     train_loader, val_loader, test_loader = get_data_loaders()
     
-    # 创建模型
-    model = CustomCNN().to(device)
-    
-    # 训练模型
-    train_metrics, val_metrics = train_model(
-        model, train_loader, val_loader,
+    # 训练CNN模型
+    print("\nTraining Custom CNN Model...")
+    cnn_model = CustomCNN().to(device)
+    cnn_train_metrics, cnn_val_metrics = train_model(
+        cnn_model, train_loader, val_loader,
         Config.NUM_EPOCHS, device
     )
     
-    # 保存最终结果
-    print("\nTraining completed!")
-    print("\nFinal Training Metrics:")
-    print_metrics_summary(train_metrics)
-    print("\nFinal Validation Metrics:")
-    print_metrics_summary(val_metrics)
+    # 保存CNN模型结果
+    torch.save(cnn_model.state_dict(), os.path.join(save_dir, 'cnn_model.pth'))
+    metrics_calculator = MetricsCalculator()
+    metrics_calculator.plot_confusion_matrix(
+        cnn_val_metrics['confusion_matrix'],
+        save_path=os.path.join(save_dir, 'cnn_confusion_matrix.png')
+    )
+    metrics_calculator.plot_pr_curves(
+        cnn_val_metrics['y_true'],
+        cnn_val_metrics['y_score'],
+        save_path=os.path.join(save_dir, 'cnn_precision_recall.png')
+    )
+    metrics_calculator.plot_roc_curves(
+        cnn_val_metrics['y_true'],
+        cnn_val_metrics['y_score'],
+        save_path=os.path.join(save_dir, 'cnn_roc_curves.png')
+    )
+    
+    # 训练ResNet模型
+    print("\nTraining ResNet Model...")
+    resnet_model = ResNetModel().to(device)
+    resnet_train_metrics, resnet_val_metrics = train_model(
+        resnet_model, train_loader, val_loader,
+        Config.NUM_EPOCHS, device
+    )
+    
+    # 保存ResNet模型结果
+    torch.save(resnet_model.state_dict(), os.path.join(save_dir, 'resnet_model.pth'))
+    metrics_calculator.plot_confusion_matrix(
+        resnet_val_metrics['confusion_matrix'],
+        save_path=os.path.join(save_dir, 'resnet_confusion_matrix.png')
+    )
+    metrics_calculator.plot_pr_curves(
+        resnet_val_metrics['y_true'],
+        resnet_val_metrics['y_score'],
+        save_path=os.path.join(save_dir, 'resnet_precision_recall.png')
+    )
+    metrics_calculator.plot_roc_curves(
+        resnet_val_metrics['y_true'],
+        resnet_val_metrics['y_score'],
+        save_path=os.path.join(save_dir, 'resnet_roc_curves.png')
+    )
+    
+    # 保存训练历史
+    history = {
+        'cnn': {
+            'train': cnn_train_metrics,
+            'val': cnn_val_metrics
+        },
+        'resnet': {
+            'train': resnet_train_metrics,
+            'val': resnet_val_metrics
+        }
+    }
+    torch.save(history, os.path.join(save_dir, 'training_history.pth'))
+    
+    # 生成训练报告
+    with open(os.path.join(save_dir, 'training_report.txt'), 'w') as f:
+        f.write("=== CNN Model ===\n")
+        f.write("\nFinal Training Metrics:\n")
+        f.write(metrics_to_string(cnn_train_metrics))
+        f.write("\nFinal Validation Metrics:\n")
+        f.write(metrics_to_string(cnn_val_metrics))
+        
+        f.write("\n\n=== ResNet Model ===\n")
+        f.write("\nFinal Training Metrics:\n")
+        f.write(metrics_to_string(resnet_train_metrics))
+        f.write("\nFinal Validation Metrics:\n")
+        f.write(metrics_to_string(resnet_val_metrics))
 
 if __name__ == '__main__':
     main() 
