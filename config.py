@@ -15,15 +15,15 @@ class Config:
     NUM_WORKERS = 2 if torch.cuda.is_available() else 0
     
     # Training parameters
-    NUM_EPOCHS = 10  # Increase training epochs
-    LEARNING_RATE = 0.0001  # Significantly reduce learning rate
-    WEIGHT_DECAY = 1e-5  # Reduce weight decay
+    NUM_EPOCHS = 30  # training epochs
+    LEARNING_RATE = 0.0001  # learning rate
+    WEIGHT_DECAY = 1e-5  # weight decay
     
     # Early stopping settings
-    EARLY_STOPPING_PATIENCE = 3  # Reduce early stopping patience
+    EARLY_STOPPING_PATIENCE = 10  # early stopping patience
     
     # Learning rate scheduler settings
-    SCHEDULER_PATIENCE = 7  # Increase scheduler patience
+    SCHEDULER_PATIENCE = 10  # scheduler patience
     SCHEDULER_FACTOR = 0.5
     MIN_LR = 1e-6
     
@@ -46,18 +46,18 @@ class Config:
     
     # Data augmentation parameters
     AUGMENTATION = {
-        'random_rotate_degrees': 45,  # Increase rotation angle
-        'random_crop_scale': (0.8, 1.0),  # Reduce crop range
-        'random_crop_ratio': (0.8, 1.2),  # Adjust crop ratio
-        'brightness_jitter': 0.4,  # Increase brightness variation
-        'contrast_jitter': 0.4,  # Increase contrast variation
-        'saturation_jitter': 0.4,  # Add saturation variation
-        'hue_jitter': 0.1,  # Add hue variation
-        'random_erase_prob': 0.5,  # Increase random erase probability
-        'mixup_alpha': 0.4,  # Increase mixup strength
-        'cutmix_prob': 0.5,  # Add CutMix probability
-        'gaussian_noise': 0.01,  # Add Gaussian noise
-        'random_perspective': 0.3  # Add perspective transformation
+        'random_rotate_degrees': 45, 
+        'random_crop_scale': (0.8, 1.0),  
+        'random_crop_ratio': (0.8, 1.2),  
+        'brightness_jitter': 0.4,  
+        'contrast_jitter': 0.4,  
+        'saturation_jitter': 0.4,  
+        'hue_jitter': 0.1,  
+        'random_erase_prob': 0.5,  
+        'mixup_alpha': 0.4,  
+        'cutmix_prob': 0.5,  
+        'gaussian_noise': 0.01, 
+        'random_perspective': 0.3
     }
     
     # Evaluation metrics settings
