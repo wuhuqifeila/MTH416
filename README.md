@@ -207,16 +207,3 @@ After training completion, the `results/` directory will contain:
 | Cancer F1 Score | 0.68 | 0.74 | +0.06 |
 | Parameter Efficiency | Baseline | 6.2x | +520% |
 
-## Author
-
-**Mingbo Zhang**  
-MTH416 Neural Networks and Deep Learning Course  
-Deadline: May 29, 2025 23:59:59
-
-## Notes
-
-- Models automatically use GPU when available, otherwise CPU
-- Data augmentation applied during training to improve generalization
-- Cosine annealing scheduler for automatic learning rate adjustment
-- Early stopping mechanism to prevent overfitting with patience of 10 epochs
-- All best model checkpoints are automatically saved during training
