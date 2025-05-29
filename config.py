@@ -10,24 +10,24 @@ class Config:
     
     # Model parameters
     NUM_CLASSES = 3
-    IMAGE_SIZE = 224  # ResNet默认输入大小
+    IMAGE_SIZE = 224  # Default input size for ResNet
     BATCH_SIZE = 32
     NUM_WORKERS = 2 if torch.cuda.is_available() else 0
     
     # Training parameters
-    NUM_EPOCHS = 10  # 增加训练轮数
-    LEARNING_RATE = 0.0001  # 大幅降低学习率
-    WEIGHT_DECAY = 1e-5  # 降低权重衰减
+    NUM_EPOCHS = 10  # Increase training epochs
+    LEARNING_RATE = 0.0001  # Significantly reduce learning rate
+    WEIGHT_DECAY = 1e-5  # Reduce weight decay
     
-    # 早停设置
-    EARLY_STOPPING_PATIENCE = 3  # 减少早停耐心值
+    # Early stopping settings
+    EARLY_STOPPING_PATIENCE = 3  # Reduce early stopping patience
     
-    # 学习率调度器设置
-    SCHEDULER_PATIENCE = 7  # 增加调度器耐心值
+    # Learning rate scheduler settings
+    SCHEDULER_PATIENCE = 7  # Increase scheduler patience
     SCHEDULER_FACTOR = 0.5
     MIN_LR = 1e-6
     
-    # 标签平滑
+    # Label smoothing
     LABEL_SMOOTHING = 0.1
     
     # Model architecture parameters
@@ -41,26 +41,26 @@ class Config:
     PREFETCH_FACTOR = 2 if torch.cuda.is_available() else None
     PERSISTENT_WORKERS = True if torch.cuda.is_available() else False
     
-    # 类别权重（调整为更温和的权重）
-    CLASS_WEIGHTS = [0.5, 1.5, 3.0]  # 降低权重差异
+    # Class weights (adjusted to more moderate weights)
+    CLASS_WEIGHTS = [0.5, 1.5, 3.0]  # Reduce weight differences
     
-    # 数据增强参数
+    # Data augmentation parameters
     AUGMENTATION = {
-        'random_rotate_degrees': 45,  # 增加旋转角度
-        'random_crop_scale': (0.8, 1.0),  # 减小裁剪范围
-        'random_crop_ratio': (0.8, 1.2),  # 调整裁剪比例
-        'brightness_jitter': 0.4,  # 增加亮度变化
-        'contrast_jitter': 0.4,  # 增加对比度变化
-        'saturation_jitter': 0.4,  # 添加饱和度变化
-        'hue_jitter': 0.1,  # 添加色调变化
-        'random_erase_prob': 0.5,  # 增加随机擦除概率
-        'mixup_alpha': 0.4,  # 增加mixup强度
-        'cutmix_prob': 0.5,  # 添加CutMix概率
-        'gaussian_noise': 0.01,  # 添加高斯噪声
-        'random_perspective': 0.3  # 添加透视变换
+        'random_rotate_degrees': 45,  # Increase rotation angle
+        'random_crop_scale': (0.8, 1.0),  # Reduce crop range
+        'random_crop_ratio': (0.8, 1.2),  # Adjust crop ratio
+        'brightness_jitter': 0.4,  # Increase brightness variation
+        'contrast_jitter': 0.4,  # Increase contrast variation
+        'saturation_jitter': 0.4,  # Add saturation variation
+        'hue_jitter': 0.1,  # Add hue variation
+        'random_erase_prob': 0.5,  # Increase random erase probability
+        'mixup_alpha': 0.4,  # Increase mixup strength
+        'cutmix_prob': 0.5,  # Add CutMix probability
+        'gaussian_noise': 0.01,  # Add Gaussian noise
+        'random_perspective': 0.3  # Add perspective transformation
     }
     
-    # 评估指标设置
+    # Evaluation metrics settings
     METRICS = {
         'accuracy': True,
         'precision': True,
@@ -70,26 +70,26 @@ class Config:
         'confusion_matrix': True
     }
     
-    # 迁移学习设置
+    # Transfer learning settings
     TRANSFER = {
-        'unfreeze_layers': 2,  # 减少解冻层数
+        'unfreeze_layers': 2,  # Reduce number of unfrozen layers
         'feature_extract': True,
-        'learning_rate_fc': 0.001,  # 保持分类器学习率
-        'learning_rate_backbone': 0.00001,  # 进一步降低主干网络学习率
+        'learning_rate_fc': 0.001,  # Maintain classifier learning rate
+        'learning_rate_backbone': 0.00001,  # Further reduce backbone learning rate
         'progressive_unfreeze': True,
-        'unfreeze_epoch': 5  # 更早开始解冻
+        'unfreeze_epoch': 5  # Start unfreezing earlier
     }
     
-    # 模型保存设置
+    # Model saving settings
     SAVE_DIR = 'results'
     CUSTOM_MODEL_PATH = os.path.join(SAVE_DIR, 'custom_model.pth')
     RESNET_MODEL_PATH = os.path.join(SAVE_DIR, 'resnet_model.pth')
     
-    # 损失函数设置
+    # Loss function settings
     LOSS = {
-        'focal_gamma': 1,  # 降低Focal Loss强度
-        'focal_alpha': [0.5, 1.5, 3.0],  # 使用更温和的权重
-        'label_smoothing': 0.05,  # 降低标签平滑强度
+        'focal_gamma': 1,  # Reduce Focal Loss strength
+        'focal_alpha': [0.5, 1.5, 3.0],  # Use more moderate weights
+        'label_smoothing': 0.05,  # Reduce label smoothing strength
         'use_focal': True,
         'use_label_smoothing': True
     }

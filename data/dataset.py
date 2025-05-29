@@ -8,22 +8,22 @@ from config import Config
 from data.augmentation import CustomDataAugmentation
 
 class BreastCancerDataset(Dataset):
-    """乳腺癌数据集"""
+    """Breast cancer dataset"""
     def __init__(self, root_dir, transform=None):
         self.root_dir = root_dir
         self.transform = transform
-        self.classes = ['normal', 'benign', 'malignant']  # 测试集使用malignant
+        self.classes = ['normal', 'benign', 'malignant']  # Test set uses malignant
         self.class_to_idx = {cls: idx for idx, cls in enumerate(self.classes)}
         
         self.samples = []
         self._load_samples()
     
     def _load_samples(self):
-        """加载数据样本"""
+        """Load data samples"""
         for class_name in self.classes:
             class_dir = os.path.join(self.root_dir, class_name)
             if not os.path.exists(class_dir):
-                # 测试集中'cancer'替换为'malignant'
+                # In test set 'cancer' is replaced with 'malignant'
                 if class_name == 'malignant':
                     class_dir = os.path.join(self.root_dir, 'cancer')
                 if not os.path.exists(class_dir):
@@ -48,12 +48,12 @@ class BreastCancerDataset(Dataset):
         return image, label
 
 def get_data_loaders():
-    """获取数据加载器"""
-    # 创建数据增强
+    """Get data loaders"""
+    # Create data augmentation
     train_transform = CustomDataAugmentation(is_training=True)
     val_transform = CustomDataAugmentation(is_training=False)
     
-    # 创建数据集
+    # Create datasets
     train_dataset = BreastCancerDataset(
         root_dir=Config.TRAIN_DIR,
         transform=train_transform
@@ -69,7 +69,7 @@ def get_data_loaders():
         transform=val_transform
     )
     
-    # 计算采样权重
+    # Calculate sampling weights
     class_counts = np.zeros(Config.NUM_CLASSES)
     for _, label in train_dataset.samples:
         class_counts[label] += 1
@@ -82,7 +82,7 @@ def get_data_loaders():
         replacement=True
     )
     
-    # 创建数据加载器
+    # Create data loaders
     train_loader = DataLoader(
         train_dataset,
         batch_size=Config.BATCH_SIZE,
@@ -113,17 +113,17 @@ def get_data_loaders():
         persistent_workers=Config.PERSISTENT_WORKERS
     )
     
-    print("\n数据集统计:")
-    print(f"训练集: {len(train_dataset)} 样本")
-    print(f"验证集: {len(val_dataset)} 样本")
-    print(f"测试集: {len(test_dataset)} 样本")
+    print("\nDataset Statistics:")
+    print(f"Training set: {len(train_dataset)} samples")
+    print(f"Validation set: {len(val_dataset)} samples")
+    print(f"Test set: {len(test_dataset)} samples")
     
-    print("\n类别分布:")
+    print("\nClass Distribution:")
     for i, count in enumerate(class_counts):
-        print(f"类别 {train_dataset.classes[i]}: {count} 样本 ({100*count/sum(class_counts):.2f}%)")
+        print(f"Class {train_dataset.classes[i]}: {count} samples ({100*count/sum(class_counts):.2f}%)")
     
-    print("\n采样权重:")
+    print("\nSampling Weights:")
     for i, w in enumerate(weights):
-        print(f"类别 {train_dataset.classes[i]}: {w:.4f}")
+        print(f"Class {train_dataset.classes[i]}: {w:.4f}")
     
     return train_loader, val_loader, test_loader 

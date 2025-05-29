@@ -7,17 +7,17 @@ from PIL import Image
 import torch.nn.functional as F
 
 class MixUpAugmentation:
-    """MixUp数据增强"""
+    """MixUp data augmentation"""
     def __init__(self, alpha=Config.AUGMENTATION['mixup_alpha']):
         self.alpha = alpha
     
     def __call__(self, x, y):
         """
-        对一个批次的数据进行mixup
-        x: 图像数据 [B, C, H, W]
-        y: 标签 [B]
+        Apply mixup to a batch of data
+        x: Image data [B, C, H, W]
+        y: Labels [B]
         """
-        if self.alpha > 0 and random.random() < 0.5:  # 50%的概率应用mixup
+        if self.alpha > 0 and random.random() < 0.5:  # 50% chance to apply mixup
             lam = np.random.beta(self.alpha, self.alpha)
         else:
             lam = 1
@@ -30,7 +30,7 @@ class MixUpAugmentation:
         return mixed_x, y_a, y_b, lam
 
 class GaussianNoise:
-    """添加高斯噪声"""
+    """Add Gaussian noise"""
     def __init__(self, std=Config.AUGMENTATION['gaussian_noise']):
         self.std = std
         
@@ -39,7 +39,7 @@ class GaussianNoise:
         return torch.clamp(tensor + noise, 0, 1)
 
 class CutMix:
-    """CutMix数据增强"""
+    """CutMix data augmentation"""
     def __init__(self, prob=Config.AUGMENTATION['cutmix_prob']):
         self.prob = prob
     
@@ -50,14 +50,14 @@ class CutMix:
         batch_size = x.size(0)
         index = torch.randperm(batch_size)
         
-        # 生成随机框
+        # Generate random box
         lam = np.random.beta(1, 1)
         bbx1, bby1, bbx2, bby2 = self._rand_bbox(x.size(), lam)
         
-        # 混合图像
+        # Mix images
         x[:, :, bbx1:bbx2, bby1:bby2] = x[index, :, bbx1:bbx2, bby1:bby2]
         
-        # 调整标签权重
+        # Adjust label weights
         lam = 1 - ((bbx2 - bbx1) * (bby2 - bby1) / (x.size(-1) * x.size(-2)))
         return x, y, y[index], lam
     
@@ -79,7 +79,7 @@ class CutMix:
         return bbx1, bby1, bbx2, bby2
 
 class CustomDataAugmentation:
-    """自定义数据增强类"""
+    """Custom data augmentation class"""
     def __init__(self, is_training=True):
         self.is_training = is_training
         self.train_transform = self._get_train_transforms()
@@ -89,12 +89,12 @@ class CustomDataAugmentation:
         self.gaussian_noise = GaussianNoise() if is_training else None
     
     def _get_train_transforms(self):
-        """获取训练数据增强"""
+        """Get training data augmentation"""
         return T.Compose([
-            # 调整大小
+            # Resize
             T.Resize((Config.IMAGE_SIZE, Config.IMAGE_SIZE)),
             
-            # 基础变换（在PIL图像上进行）
+            # Basic transforms (on PIL images)
             T.RandomHorizontalFlip(),
             T.RandomVerticalFlip(),
             T.RandomRotation(
@@ -111,7 +111,7 @@ class CustomDataAugmentation:
                 p=0.5
             ),
             
-            # 色彩变换
+            # Color transforms
             T.ColorJitter(
                 brightness=Config.AUGMENTATION['brightness_jitter'],
                 contrast=Config.AUGMENTATION['contrast_jitter'],
@@ -119,21 +119,21 @@ class CustomDataAugmentation:
                 hue=Config.AUGMENTATION['hue_jitter']
             ),
             
-            # 转换为张量
+            # Convert to tensor
             T.ToTensor(),
             
-            # 在张量上进行的变换
+            # Transforms on tensors
             T.Normalize(
                 mean=[0.485, 0.456, 0.406],
                 std=[0.229, 0.224, 0.225]
             ),
             
-            # 随机擦除
+            # Random erasing
             T.RandomErasing(p=Config.AUGMENTATION['random_erase_prob'])
         ])
     
     def _get_val_transforms(self):
-        """获取验证数据增强"""
+        """Get validation data augmentation"""
         return T.Compose([
             T.Resize((Config.IMAGE_SIZE, Config.IMAGE_SIZE)),
             T.ToTensor(),
@@ -145,8 +145,8 @@ class CustomDataAugmentation:
     
     def __call__(self, img):
         """
-        应用数据增强
-        img: PIL图像
+        Apply data augmentation
+        img: PIL image
         """
         if self.is_training:
             img = self.train_transform(img)
@@ -157,14 +157,14 @@ class CustomDataAugmentation:
     
     def apply_mixup(self, x, y):
         """
-        应用MixUp增强
-        x: 图像张量 [B, C, H, W]
-        y: 标签 [B]
+        Apply MixUp augmentation
+        x: Image tensor [B, C, H, W]
+        y: Labels [B]
         """
         if not self.is_training:
             return x, y, None, None
             
-        if random.random() < 0.5:  # 50%概率使用MixUp
+        if random.random() < 0.5:  
             return self.mixup(x, y)
-        else:  # 50%概率使用CutMix
+        else:  
             return self.cutmix(x, y) 

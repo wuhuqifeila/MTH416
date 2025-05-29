@@ -4,11 +4,11 @@ import torch.nn.functional as F
 from config import Config
 
 class FocalLoss(nn.Module):
-    """Focal Loss实现
+    """Focal Loss implementation
     
-    参数:
-        gamma (float): 聚焦参数，降低易分类样本的权重
-        alpha (tensor): 类别权重
+    Args:
+        gamma (float): Focusing parameter, reduces weight of easy examples
+        alpha (tensor): Class weights
     """
     def __init__(self, gamma=2, alpha=None, reduction='mean'):
         super().__init__()
@@ -34,7 +34,7 @@ class FocalLoss(nn.Module):
             return focal_loss
 
 class LabelSmoothingLoss(nn.Module):
-    """标签平滑损失函数"""
+    """Label smoothing loss function"""
     def __init__(self, smoothing=Config.LABEL_SMOOTHING):
         super().__init__()
         self.smoothing = smoothing
@@ -49,20 +49,20 @@ class LabelSmoothingLoss(nn.Module):
         return torch.mean(torch.sum(-true_dist * pred, dim=-1))
 
 class CombinedLoss(nn.Module):
-    """组合损失函数：Focal Loss + Label Smoothing"""
+    """Combined loss function: Focal Loss + Label Smoothing"""
     def __init__(self, alpha=None, gamma=1.0, smoothing=0.05, reduction='mean'):
         """
-        组合损失函数：Focal Loss + 标签平滑
+        Combined loss function: Focal Loss + Label Smoothing
         
         Args:
-            alpha: 类别权重，默认为 [0.5, 1.5, 3.0]
-            gamma: Focal Loss的聚焦参数，降低到1.0
-            smoothing: 标签平滑参数，降低到0.05
-            reduction: 损失聚合方式
+            alpha: Class weights, default to [0.5, 1.5, 3.0]
+            gamma: Focal Loss focusing parameter, reduced to 1.0
+            smoothing: Label smoothing parameter, reduced to 0.05
+            reduction: Loss reduction method
         """
         super().__init__()
         if alpha is None:
-            alpha = [0.5, 1.5, 3.0]  # 更温和的权重
+            alpha = [0.5, 1.5, 3.0]  # More moderate weights
         
         self.focal_loss = FocalLoss(alpha=alpha, gamma=gamma, reduction=reduction)
         self.label_smoothing = LabelSmoothingLoss(smoothing=smoothing)

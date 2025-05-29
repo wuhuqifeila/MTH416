@@ -11,18 +11,18 @@ from config import Config
 
 def count_parameters(model):
     """
-    统计模型参数数量
+    Count model parameters
     """
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
 
 def calculate_metrics(labels, preds, scores):
     """
-    计算评估指标
+    Calculate evaluation metrics
     """
-    # 计算混淆矩阵
+    # Calculate confusion matrix
     cm = confusion_matrix(labels, preds)
     
-    # 计算每个类别的精确率和召回率
+    # Calculate precision and recall for each class
     precision = dict()
     recall = dict()
     ap = dict()
@@ -41,7 +41,7 @@ def calculate_metrics(labels, preds, scores):
 
 def plot_confusion_matrix(cm, class_names):
     """
-    绘制混淆矩阵
+    Plot confusion matrix
     """
     plt.figure(figsize=(8, 6))
     plt.imshow(cm, interpolation='nearest', cmap=plt.cm.Blues)
@@ -52,7 +52,7 @@ def plot_confusion_matrix(cm, class_names):
     plt.xticks(tick_marks, class_names, rotation=45)
     plt.yticks(tick_marks, class_names)
     
-    # 添加数值标签
+    # Add numerical labels
     thresh = cm.max() / 2.
     for i in range(cm.shape[0]):
         for j in range(cm.shape[1]):
@@ -68,7 +68,7 @@ def plot_confusion_matrix(cm, class_names):
 
 def plot_precision_recall_curve(precision, recall, ap, class_names):
     """
-    绘制精确率-召回率曲线
+    Plot precision-recall curve
     """
     plt.figure(figsize=(8, 6))
     
@@ -86,18 +86,18 @@ def plot_precision_recall_curve(precision, recall, ap, class_names):
 
 def print_model_summary(model, input_size=(1, 3, 128, 128)):
     """
-    打印模型摘要
+    Print model summary
     """
-    print("\n模型架构:")
+    print("\nModel Architecture:")
     print(model)
     
-    print("\n模型参数统计:")
+    print("\nModel Parameter Statistics:")
     total_params = sum(p.numel() for p in model.parameters())
     trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(f"总参数数量: {total_params:,}")
-    print(f"可训练参数数量: {trainable_params:,}")
+    print(f"Total parameters: {total_params:,}")
+    print(f"Trainable parameters: {trainable_params:,}")
     
-    # 计算模型大小
+    # Calculate model size
     param_size = 0
     for param in model.parameters():
         param_size += param.nelement() * param.element_size()
@@ -106,53 +106,53 @@ def print_model_summary(model, input_size=(1, 3, 128, 128)):
         buffer_size += buffer.nelement() * buffer.element_size()
     
     size_all_mb = (param_size + buffer_size) / 1024**2
-    print(f"模型大小: {size_all_mb:.2f} MB")
+    print(f"Model size: {size_all_mb:.2f} MB")
     
-    # 计算每层的参数数量
-    print("\n各层参数统计:")
+    # Calculate parameters per layer
+    print("\nPer-layer Parameter Statistics:")
     for name, param in model.named_parameters():
         if param.requires_grad:
-            print(f"{name}: {param.numel():,} 参数")
+            print(f"{name}: {param.numel():,} parameters")
 
 class MetricsCalculator:
-    """评估指标计算器"""
+    """Evaluation metrics calculator"""
     def __init__(self, num_classes=Config.NUM_CLASSES):
         self.num_classes = num_classes
         self.class_names = ['normal', 'benign', 'cancer']
     
     def calculate_all_metrics(self, y_true, y_pred, y_score):
-        """计算所有评估指标"""
+        """Calculate all evaluation metrics"""
         metrics = {}
         
-        # 基础指标
+        # Basic metrics
         metrics['accuracy'] = accuracy_score(y_true, y_pred)
         metrics['precision'] = precision_score(y_true, y_pred, average='weighted')
         metrics['recall'] = recall_score(y_true, y_pred, average='weighted')
         metrics['f1'] = f1_score(y_true, y_pred, average='weighted')
         
-        # 每个类别的指标
+        # Per-class metrics
         for i in range(self.num_classes):
             y_true_binary = (y_true == i).astype(int)
             y_score_binary = y_score[:, i]
             
-            # PR曲线
+            # PR curve
             precision, recall, _ = precision_recall_curve(y_true_binary, y_score_binary)
             metrics[f'ap_class_{i}'] = average_precision_score(y_true_binary, y_score_binary)
             
-            # ROC曲线
+            # ROC curve
             fpr, tpr, _ = roc_curve(y_true_binary, y_score_binary)
             metrics[f'auc_class_{i}'] = auc(fpr, tpr)
             
-            # 类别特定F1
+            # Class-specific F1
             metrics[f'f1_class_{i}'] = f1_score(y_true_binary, (y_pred == i).astype(int))
         
-        # 混淆矩阵
+        # Confusion matrix
         metrics['confusion_matrix'] = confusion_matrix(y_true, y_pred)
         
         return metrics
     
     def plot_confusion_matrix(self, cm, save_path=None):
-        """绘制混淆矩阵"""
+        """Plot confusion matrix"""
         plt.figure(figsize=(10, 8))
         sns.heatmap(cm, annot=True, fmt='d', cmap='Blues',
                    xticklabels=self.class_names,
@@ -168,7 +168,7 @@ class MetricsCalculator:
             plt.show()
     
     def plot_pr_curves(self, y_true, y_score, save_path=None):
-        """绘制PR曲线"""
+        """Plot PR curves"""
         plt.figure(figsize=(10, 8))
         
         for i in range(self.num_classes):
@@ -192,7 +192,7 @@ class MetricsCalculator:
             plt.show()
     
     def plot_roc_curves(self, y_true, y_score, save_path=None):
-        """绘制ROC曲线"""
+        """Plot ROC curves"""
         plt.figure(figsize=(10, 8))
         
         for i in range(self.num_classes):
@@ -219,16 +219,23 @@ class MetricsCalculator:
             plt.show()
 
 def print_metrics_summary(metrics):
-    """打印评估指标摘要"""
-    print("\n=== Metrics Summary ===")
+    """Print evaluation metrics summary"""
     print(f"Accuracy: {metrics['accuracy']:.4f}")
-    print(f"Weighted Precision: {metrics['precision']:.4f}")
-    print(f"Weighted Recall: {metrics['recall']:.4f}")
-    print(f"Weighted F1: {metrics['f1']:.4f}")
+    print(f"Precision: {metrics['precision']:.4f}")
+    print(f"Recall: {metrics['recall']:.4f}")
+    print(f"F1 Score: {metrics['f1']:.4f}")
+    
+    if 'confusion_matrix' in metrics:
+        print("\nConfusion Matrix:")
+        print(metrics['confusion_matrix'])
     
     print("\nPer-class metrics:")
-    for i in range(Config.NUM_CLASSES):
-        print(f"\nClass {i}:")
-        print(f"  F1: {metrics[f'f1_class_{i}']:.4f}")
-        print(f"  AP: {metrics[f'ap_class_{i}']:.4f}")
-        print(f"  AUC: {metrics[f'auc_class_{i}']:.4f}") 
+    class_names = ['normal', 'benign', 'cancer']
+    for i, name in enumerate(class_names):
+        print(f"{name.capitalize()}:")
+        if f'ap_class_{i}' in metrics:
+            print(f"  Average Precision: {metrics[f'ap_class_{i}']:.4f}")
+        if f'auc_class_{i}' in metrics:
+            print(f"  AUC: {metrics[f'auc_class_{i}']:.4f}")
+        if f'f1_class_{i}' in metrics:
+            print(f"  F1 Score: {metrics[f'f1_class_{i}']:.4f}") 

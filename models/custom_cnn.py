@@ -5,7 +5,7 @@ from config import Config
 
 class ConvBlock(nn.Module):
     """
-    卷积块：Conv -> BN -> ReLU -> MaxPool
+    Convolutional block: Conv -> BN -> ReLU -> MaxPool
     """
     def __init__(self, in_channels, out_channels, kernel_size=3, stride=1, padding=1):
         super().__init__()
@@ -22,50 +22,49 @@ class ConvBlock(nn.Module):
 
 class CustomCNN(nn.Module):
     """
-    优化后的CNN模型
-    改进：
-    1. 添加全局平均池化层替代第一个全连接层
-    2. 简化全连接层结构
-    3. 减少参数量
-    4. 保持模型表达能力
+    Optimized CNN model
+    Improvements:
+    1. Add global average pooling layer to replace the first fully connected layer
+    2. Simplify fully connected layer structure
+    3. Reduce parameter count
+    4. Maintain model expressiveness
     """
     def __init__(self):
         super().__init__()
-        # 输入图像: 3x128x128
         
-        # 卷积层
-        self.conv1 = ConvBlock(3, 32)     # -> 32x64x64
-        self.conv2 = ConvBlock(32, 64)    # -> 64x32x32
-        self.conv3 = ConvBlock(64, 128)   # -> 128x16x16
-        self.conv4 = ConvBlock(128, 256)  # -> 256x8x8
-        self.conv5 = ConvBlock(256, 512)  # -> 512x4x4
+        # Convolutional layers
+        self.conv1 = ConvBlock(3, 32)     
+        self.conv2 = ConvBlock(32, 64)    
+        self.conv3 = ConvBlock(64, 128)   
+        self.conv4 = ConvBlock(128, 256)  
+        self.conv5 = ConvBlock(256, 512)  
         
-        # 全局平均池化层
+        # Global average pooling layer
         self.global_pool = nn.AdaptiveAvgPool2d(1)
         
-        # 简化的全连接层
+        # Simplified fully connected layers
         self.fc1 = nn.Linear(512, 128)
         self.fc2 = nn.Linear(128, Config.NUM_CLASSES)
         
         # Dropout
         self.dropout = nn.Dropout(Config.DROPOUT_RATE)
         
-        # 权重初始化
+        # Weight initialization
         self._initialize_weights()
     
     def forward(self, x):
-        # 卷积层
+        # Convolutional layers
         x = self.conv1(x)
         x = self.conv2(x)
         x = self.conv3(x)
         x = self.conv4(x)
         x = self.conv5(x)
         
-        # 全局平均池化
+        # Global average pooling
         x = self.global_pool(x)
         x = x.view(x.size(0), -1)
         
-        # 全连接层
+        # Fully connected layers
         x = self.fc1(x)
         x = F.relu(x)
         x = self.dropout(x)
@@ -76,7 +75,7 @@ class CustomCNN(nn.Module):
     
     def _initialize_weights(self):
         """
-        使用He初始化
+        Use He initialization
         """
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
