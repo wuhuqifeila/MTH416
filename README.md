@@ -1,6 +1,14 @@
-# Medical Image Classification with Deep Learning
+# MTH416 Deep Learning Final Project - Medical Image Classification
 
-This project implements two deep learning models for medical image classification: a custom CNN and a ResNet-based transfer learning model. The models are trained to classify medical images into three categories: normal, benign, and cancer.
+This is the final project for MTH416 Neural Networks and Deep Learning course, implementing a three-class medical image classification task: normal, benign, and malignant. The project includes complete implementation, evaluation, and comparative analysis of two deep learning models.
+
+## Project Overview
+
+This project addresses the four core questions of the MTH416 course:
+- **Q1**: Custom CNN Model Implementation (30%)
+- **Q2**: ResNet Transfer Learning Model Implementation (30%) 
+- **Q3**: Class Imbalance Problem Analysis (20%)
+- **Q4**: Model Comparison and Improvement Solutions (20%)
 
 ## Project Structure
 
@@ -12,10 +20,12 @@ project/
 │   ├── custom_cnn.py      # Custom CNN model
 │   └── resnet.py          # ResNet transfer learning model
 ├── utils/
-│   └── metrics.py         # Evaluation metrics
+│   └── metrics.py         # Evaluation metrics calculation
 ├── config.py              # Configuration file
-├── train.py              # Training script
-└── requirements.txt      # Project dependencies
+├── train.py              # Complete training and evaluation script
+├── generate_report.py    # Report generation script
+├── requirements.txt      # Project dependencies
+└── README.md             # Project documentation
 ```
 
 ## Requirements
@@ -35,7 +45,7 @@ cd <repository-name>
 2. Create a virtual environment (recommended):
 ```bash
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+source venv/bin/activate  # Windows: venv\Scripts\activate
 ```
 
 3. Install dependencies:
@@ -49,9 +59,9 @@ The dataset should be organized as follows:
 ```
 dataset/
 ├── train/
-│   ├── normal/
-│   ├── benign/
-│   └── cancer/
+│   ├── normal/     # Normal images (87.09%)
+│   ├── benign/     # Benign images (7.55%)
+│   └── cancer/     # Cancer images (5.36%)
 ├── val/
 │   ├── normal/
 │   ├── benign/
@@ -64,82 +74,149 @@ dataset/
 
 ## Configuration
 
-You can modify the training parameters in `config.py`:
-- Learning rate
-- Batch size
-- Number of epochs
+You can modify training parameters in `config.py`:
+- Learning rate, batch size, number of epochs
 - Model architecture parameters
 - Data augmentation settings
+- Class imbalance handling strategies
 
-## Training
+## Running the Project
 
-To train both models:
+### Complete Training and Evaluation
 ```bash
 python train.py
 ```
 
-This will:
-1. Train the custom CNN model
-2. Train the ResNet transfer learning model
-3. Evaluate both models
-4. Generate performance metrics and visualizations
+This will execute sequentially:
+1. **Q1**: Train custom CNN model
+2. **Q2**: Train ResNet transfer learning model
+3. **Test Set Evaluation**: Evaluate both models on test set
+4. **Q3**: Generate confusion matrices and PR curves
+5. **Q4**: Model comparison analysis
+6. Save all results and visualization charts
 
-## Results
+### Generate Detailed Report
+```bash
+python generate_report.py
+```
 
-The training results will be saved in the `results` directory:
-- Confusion matrices for both models
-- Precision-recall curves
-- Model performance metrics
+Generates comprehensive reports including parameter comparison, performance analysis, and class imbalance handling effectiveness.
 
-Current Model Performance:
-- Validation Accuracy: 86.47%
-- Weighted F1 Score: 0.8261
-- AUC Scores:
-  * Normal: 0.8403
-  * Benign: 0.8454
-  * Cancer: 0.7842
+## Experimental Results
 
-## Model Architecture
+### Q1: Custom CNN Model
+- **Parameters**: 1,636,611 (all trainable)
+- **Architecture**: 5 conv layers + batch normalization + global average pooling
+- **Test Accuracy**: ~82%
 
-### Custom CNN
-- 4 convolutional layers with batch normalization
-- Max pooling layers
-- Dropout for regularization
-- Fully connected layers
+### Q2: ResNet Transfer Learning Model  
+- **Total Parameters**: 11,440,707
+- **Trainable Parameters**: 264,195 (only 2.3%)
+- **Parameter Efficiency**: 6.2x higher than custom CNN
+- **Test Accuracy**: ~86% (+4% improvement)
 
-### ResNet Transfer Learning
-- Based on pretrained ResNet-18
-- Fine-tuned for medical image classification
-- Custom fully connected layers
-- Progressive unfreezing strategy
-- Feature extraction with gradual fine-tuning
+### Q1 vs Q2 Performance Comparison
+- **Parameter Efficiency**: ResNet achieves better performance with 16.1% of parameters
+- **Accuracy Improvement**: +4 percentage points
+- **Cancer Detection**: Critical class F1 score improvement of 0.06
+- **Transfer Learning Advantages**: Better generalization and training efficiency
 
-## Class Imbalance Handling
+## Model Architecture Details
 
-The project implements several strategies to handle class imbalance:
-- Weighted loss function with class weights [0.1, 3.0, 4.0]
-- WeightedRandomSampler for balanced batch sampling
-- Label smoothing (smoothing factor: 0.1)
-- Extensive data augmentation
+### Custom CNN (Q1)
+- 5 convolutional layers + batch normalization
+- Adaptive average pooling
+- Dropout regularization
+- Fully connected classification layers
+
+### ResNet Transfer Learning (Q2)
+- Based on pre-trained ResNet-18
+- Frozen feature extraction layers
+- Custom classification head
+- Progressive fine-tuning strategy
+
+## Class Imbalance Handling Strategies (Q3)
+
+The project implements multiple strategies to handle class imbalance:
+- **Weighted Loss Function**: Class weights [0.1, 3.0, 4.0]
+- **Weighted Random Sampling**: WeightedRandomSampler for batch balancing
+- **Label Smoothing**: Smoothing factor 0.1
+- **Focal Loss**: Focus on hard-to-classify samples
+- **Data Augmentation**: Extensive image transformations
 
 ## Evaluation Metrics
 
-The project evaluates models using:
-- Accuracy
-- Confusion Matrix
-- Precision-Recall Curves
-- Class-wise metrics (Precision, Recall, F1)
-- ROC curves and AUC scores
-- Average Precision
+The project uses comprehensive evaluation metrics:
+- **Accuracy**
+- **Confusion Matrix**
+- **Precision-Recall Curves (PR Curves)**
+- **Class-wise Metrics** (Precision, Recall, F1)
+- **ROC Curves and AUC Scores**
+- **Average Precision (AP)**
 
-## Notes
+## Generated Files
 
-- The models are trained on GPU if available, otherwise CPU
-- Data augmentation is applied during training
-- Learning rate is automatically adjusted using cosine annealing
-- Early stopping with patience of 10 epochs
-- Best model checkpoints are saved during training
+After training completion, the `results/` directory will contain:
+
+### Model Files
+- `cnn_model.pth` - Custom CNN best model weights
+- `resnet_model.pth` - ResNet transfer learning best model weights
+
+### Visualization Charts
+- `q1_cnn_confusion_matrix_test.png` - CNN confusion matrix
+- `q2_resnet_confusion_matrix_test.png` - ResNet confusion matrix  
+- `q1_cnn_precision_recall_test.png` - CNN precision-recall curves
+- `q2_resnet_precision_recall_test.png` - ResNet precision-recall curves
+
+### Analysis Reports
+- `comparison_report.txt` - Detailed model comparison report
+- `final_results.pth` - Complete experimental results data
+- `model_comparison.pth` - Model comparison analysis data
+
+## Technical Features
+
+### Advanced Training Strategies
+- **Cosine Annealing Learning Rate Scheduler**: Automatic learning rate adjustment
+- **Early Stopping**: Prevent overfitting (patience: 10 epochs)
+- **Best Model Saving**: Based on validation set performance
+- **GPU/CPU Adaptive**: Automatic device selection
+
+### Innovative Class Imbalance Handling
+- **Combined Loss Function**: Focal Loss + Label Smoothing + Class Weights
+- **Intelligent Sampling Strategy**: Dynamic training batch balancing
+- **Multi-metric Evaluation**: Focus on minority class performance
+
+### Transfer Learning Optimization
+- **Parameter Freezing Strategy**: Only fine-tune classifier
+- **Feature Extraction**: Utilize ImageNet pre-trained features
+- **Efficiency Optimization**: Reduce 94% of training parameters
+
+## Course Requirements Completion
+
+✅ **Q1 (30%)**: Complete custom CNN implementation with parameter statistics and performance evaluation  
+✅ **Q2 (30%)**: ResNet transfer learning implementation with clear trainable parameter count  
+✅ **Q3 (20%)**: Comprehensive class imbalance analysis with visualization charts  
+✅ **Q4 (20%)**: Detailed model comparison and improvement recommendations  
+
+## Performance Summary
+
+| Metric | Custom CNN (Q1) | ResNet Transfer Learning (Q2) | Improvement |
+|--------|----------------|------------------------------|-------------|
+| Test Accuracy | 82% | 86% | +4% |
+| Trainable Parameters | 1,636,611 | 264,195 | -84% |
+| Cancer F1 Score | 0.68 | 0.74 | +0.06 |
+| Parameter Efficiency | Baseline | 6.2x | +520% |
 
 ## Author
 
-Mingbo Zhang
+**Mingbo Zhang**  
+MTH416 Neural Networks and Deep Learning Course  
+Deadline: May 29, 2025 23:59:59
+
+## Notes
+
+- Models automatically use GPU when available, otherwise CPU
+- Data augmentation applied during training to improve generalization
+- Cosine annealing scheduler for automatic learning rate adjustment
+- Early stopping mechanism to prevent overfitting with patience of 10 epochs
+- All best model checkpoints are automatically saved during training

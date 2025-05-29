@@ -289,7 +289,7 @@ def create_summary_plots(results_dir):
     plt.savefig(os.path.join(results_dir, 'performance_summary.png'), dpi=300, bbox_inches='tight')
     plt.close()
     
-    print(f"📊 Summary plots saved: {os.path.join(results_dir, 'performance_summary.png')}")
+    print(f"Summary plots saved: {os.path.join(results_dir, 'performance_summary.png')}")
 
 if __name__ == "__main__":
     # Find latest results directory
@@ -300,7 +300,7 @@ if __name__ == "__main__":
             latest_dir = max(subdirs)
             results_dir = os.path.join(results_base, latest_dir)
             
-            print(f"📂 Analyzing results directory: {results_dir}")
+            print(f"Analyzing results directory: {results_dir}")
             
             # Generate report
             generate_course_report(results_dir)
@@ -309,6 +309,6 @@ if __name__ == "__main__":
             create_summary_plots(results_dir)
             
         else:
-            print("❌ No training result directories found")
+            print("No training result directories found")
     else:
-        print("❌ results directory does not exist") 
+        print("results directory does not exist") 
