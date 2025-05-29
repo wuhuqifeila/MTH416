@@ -5,38 +5,35 @@ from config import Config
 
 class ResNetTransfer(nn.Module):
     """基于ResNet-18的迁移学习模型"""
-    def __init__(self, freeze_layers=True):
+    def __init__(self, num_classes=3, freeze_backbone=True):
         super().__init__()
-        # 加载预训练的ResNet-18
-        self.resnet = models.resnet18(weights=models.ResNet18_Weights.DEFAULT)
         
-        if freeze_layers:
-            # 冻结所有卷积层
-            for param in self.resnet.parameters():
+        # 加载预训练ResNet18
+        self.backbone = models.resnet18(weights=models.ResNet18_Weights.IMAGENET1K_V1)
+        
+        # 冻结主干网络
+        if freeze_backbone:
+            for param in self.backbone.parameters():
                 param.requires_grad = False
         
-        # 修改最后的全连接层
-        num_features = self.resnet.fc.in_features
-        self.resnet.fc = nn.Sequential(
-            nn.Linear(num_features, 512),
-            nn.ReLU(inplace=True),
-            nn.Dropout(Config.DROPOUT_RATE),
-            nn.Linear(512, Config.NUM_CLASSES)
+        # 替换最后的分类层
+        in_features = self.backbone.fc.in_features
+        self.backbone.fc = nn.Sequential(
+            nn.Dropout(0.3),  # 降低dropout
+            nn.Linear(in_features, 128),
+            nn.ReLU(),
+            nn.Dropout(0.2),  # 降低dropout
+            nn.Linear(128, num_classes)
         )
         
-        # 初始化新添加的层
-        self._initialize_weights()
+        # 初始化新的分类层
+        for layer in self.backbone.fc:
+            if isinstance(layer, nn.Linear):
+                nn.init.xavier_uniform_(layer.weight)
+                nn.init.zeros_(layer.bias)
     
     def forward(self, x):
-        return self.resnet(x)
-    
-    def _initialize_weights(self):
-        """初始化新添加层的权重"""
-        for m in self.resnet.fc:
-            if isinstance(m, nn.Linear):
-                nn.init.kaiming_normal_(m.weight, mode='fan_out', nonlinearity='relu')
-                if m.bias is not None:
-                    nn.init.constant_(m.bias, 0)
+        return self.backbone(x)
     
     def unfreeze_layers(self, num_layers=0):
         """解冻指定数量的层"""
@@ -45,10 +42,10 @@ class ResNetTransfer(nn.Module):
         
         # 解冻最后几个层
         trainable_layers = [
-            self.resnet.layer4,
-            self.resnet.layer3,
-            self.resnet.layer2,
-            self.resnet.layer1
+            self.backbone.layer4,
+            self.backbone.layer3,
+            self.backbone.layer2,
+            self.backbone.layer1
         ]
         
         for layer in trainable_layers[:num_layers]:
@@ -73,7 +70,7 @@ class ResNetTransfer(nn.Module):
 
 def create_resnet_model(unfreeze_layers=0):
     """创建ResNet迁移学习模型"""
-    model = ResNetTransfer(freeze_layers=True)
+    model = ResNetTransfer(freeze_backbone=True)
     if unfreeze_layers > 0:
         model.unfreeze_layers(unfreeze_layers)
     return model

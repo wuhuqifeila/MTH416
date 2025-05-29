@@ -15,12 +15,12 @@ class Config:
     NUM_WORKERS = 2 if torch.cuda.is_available() else 0
     
     # Training parameters
-    NUM_EPOCHS = 50  # 增加训练轮数
-    LEARNING_RATE = 0.0005  # 降低学习率
-    WEIGHT_DECAY = 5e-4  # 增加权重衰减
+    NUM_EPOCHS = 10  # 增加训练轮数
+    LEARNING_RATE = 0.0001  # 大幅降低学习率
+    WEIGHT_DECAY = 1e-5  # 降低权重衰减
     
     # 早停设置
-    EARLY_STOPPING_PATIENCE = 15  # 增加早停耐心值
+    EARLY_STOPPING_PATIENCE = 3  # 减少早停耐心值
     
     # 学习率调度器设置
     SCHEDULER_PATIENCE = 7  # 增加调度器耐心值
@@ -41,8 +41,8 @@ class Config:
     PREFETCH_FACTOR = 2 if torch.cuda.is_available() else None
     PERSISTENT_WORKERS = True if torch.cuda.is_available() else False
     
-    # 类别权重（基于数据集统计）
-    CLASS_WEIGHTS = [0.1, 2.0, 8.0]  # 显著增加cancer类的权重
+    # 类别权重（调整为更温和的权重）
+    CLASS_WEIGHTS = [0.5, 1.5, 3.0]  # 降低权重差异
     
     # 数据增强参数
     AUGMENTATION = {
@@ -72,12 +72,12 @@ class Config:
     
     # 迁移学习设置
     TRANSFER = {
-        'unfreeze_layers': 3,  # 增加解冻层数
+        'unfreeze_layers': 2,  # 减少解冻层数
         'feature_extract': True,
-        'learning_rate_fc': 0.001,
-        'learning_rate_backbone': 0.00005,  # 降低主干网络学习率
+        'learning_rate_fc': 0.001,  # 保持分类器学习率
+        'learning_rate_backbone': 0.00001,  # 进一步降低主干网络学习率
         'progressive_unfreeze': True,
-        'unfreeze_epoch': 8  # 增加解冻间隔
+        'unfreeze_epoch': 5  # 更早开始解冻
     }
     
     # 模型保存设置
@@ -87,11 +87,11 @@ class Config:
     
     # 损失函数设置
     LOSS = {
-        'focal_gamma': 2,  # Focal Loss的gamma参数
-        'focal_alpha': CLASS_WEIGHTS,  # 使用类别权重作为alpha
-        'label_smoothing': 0.1,  # 标签平滑系数
-        'use_focal': True,  # 是否使用Focal Loss
-        'use_label_smoothing': True  # 是否使用标签平滑
+        'focal_gamma': 1,  # 降低Focal Loss强度
+        'focal_alpha': [0.5, 1.5, 3.0],  # 使用更温和的权重
+        'label_smoothing': 0.05,  # 降低标签平滑强度
+        'use_focal': True,
+        'use_label_smoothing': True
     }
     
     # Intel optimization

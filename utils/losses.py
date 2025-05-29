@@ -10,12 +10,13 @@ class FocalLoss(nn.Module):
         gamma (float): 聚焦参数，降低易分类样本的权重
         alpha (tensor): 类别权重
     """
-    def __init__(self, gamma=2, alpha=None):
+    def __init__(self, gamma=2, alpha=None, reduction='mean'):
         super().__init__()
         self.gamma = gamma
         self.alpha = alpha
         if alpha is not None:
             self.alpha = torch.tensor(alpha).to(Config.DEVICE)
+        self.reduction = reduction
     
     def forward(self, inputs, targets):
         ce_loss = F.cross_entropy(inputs, targets, reduction='none')
@@ -25,7 +26,12 @@ class FocalLoss(nn.Module):
         if self.alpha is not None:
             focal_loss = self.alpha[targets] * focal_loss
             
-        return focal_loss.mean()
+        if self.reduction == 'mean':
+            return focal_loss.mean()
+        elif self.reduction == 'sum':
+            return focal_loss.sum()
+        else:
+            return focal_loss
 
 class LabelSmoothingLoss(nn.Module):
     """标签平滑损失函数"""
@@ -44,10 +50,23 @@ class LabelSmoothingLoss(nn.Module):
 
 class CombinedLoss(nn.Module):
     """组合损失函数：Focal Loss + Label Smoothing"""
-    def __init__(self, alpha=Config.CLASS_WEIGHTS, gamma=2, smoothing=Config.LABEL_SMOOTHING):
+    def __init__(self, alpha=None, gamma=1.0, smoothing=0.05, reduction='mean'):
+        """
+        组合损失函数：Focal Loss + 标签平滑
+        
+        Args:
+            alpha: 类别权重，默认为 [0.5, 1.5, 3.0]
+            gamma: Focal Loss的聚焦参数，降低到1.0
+            smoothing: 标签平滑参数，降低到0.05
+            reduction: 损失聚合方式
+        """
         super().__init__()
-        self.focal = FocalLoss(gamma=gamma, alpha=alpha)
-        self.smoothing = LabelSmoothingLoss(smoothing=smoothing)
+        if alpha is None:
+            alpha = [0.5, 1.5, 3.0]  # 更温和的权重
+        
+        self.focal_loss = FocalLoss(alpha=alpha, gamma=gamma, reduction=reduction)
+        self.label_smoothing = LabelSmoothingLoss(smoothing=smoothing)
+        self.smoothing = smoothing
         
     def forward(self, inputs, targets):
-        return self.focal(inputs, targets) + self.smoothing(inputs, targets) 
+        return self.focal_loss(inputs, targets) + self.label_smoothing(inputs, targets) 
