@@ -5,10 +5,10 @@ This is the final project for MTH416 Neural Networks and Deep Learning course, i
 ## Project Overview
 
 This project addresses the four core questions of the MTH416 course:
-- **Q1**: Custom CNN Model Implementation (30%)
-- **Q2**: ResNet Transfer Learning Model Implementation (30%) 
-- **Q3**: Class Imbalance Problem Analysis (20%)
-- **Q4**: Model Comparison and Improvement Solutions (20%)
+- Custom CNN Model Implementation (30%)
+- ResNet Transfer Learning Model Implementation (30%) 
+- Class Imbalance Problem Analysis (20%)
+- Model Comparison and Improvement Solutions (20%)
 
 ## Project Structure
 
@@ -88,11 +88,11 @@ python train.py
 ```
 
 This will execute sequentially:
-1. **Q1**: Train custom CNN model
-2. **Q2**: Train ResNet transfer learning model
-3. **Test Set Evaluation**: Evaluate both models on test set
-4. **Q3**: Generate confusion matrices and PR curves
-5. **Q4**: Model comparison analysis
+1. Train custom CNN model
+2. Train ResNet transfer learning model
+3. Evaluate both models on test set
+4. Generate confusion matrices and PR curves
+5. Model comparison analysis
 6. Save all results and visualization charts
 
 ### Generate Detailed Report
@@ -104,18 +104,18 @@ Generates comprehensive reports including parameter comparison, performance anal
 
 ## Experimental Results
 
-### Q1: Custom CNN Model
+### Custom CNN Model
 - **Parameters**: 1,636,611 (all trainable)
 - **Architecture**: 5 conv layers + batch normalization + global average pooling
 - **Test Accuracy**: ~82%
 
-### Q2: ResNet Transfer Learning Model  
+### ResNet Transfer Learning Model  
 - **Total Parameters**: 11,440,707
 - **Trainable Parameters**: 264,195 (only 2.3%)
 - **Parameter Efficiency**: 6.2x higher than custom CNN
 - **Test Accuracy**: ~86% (+4% improvement)
 
-### Q1 vs Q2 Performance Comparison
+### Model Performance Comparison
 - **Parameter Efficiency**: ResNet achieves better performance with 16.1% of parameters
 - **Accuracy Improvement**: +4 percentage points
 - **Cancer Detection**: Critical class F1 score improvement of 0.06
@@ -123,19 +123,19 @@ Generates comprehensive reports including parameter comparison, performance anal
 
 ## Model Architecture Details
 
-### Custom CNN (Q1)
+### Custom CNN
 - 5 convolutional layers + batch normalization
 - Adaptive average pooling
 - Dropout regularization
 - Fully connected classification layers
 
-### ResNet Transfer Learning (Q2)
+### ResNet Transfer Learning
 - Based on pre-trained ResNet-18
 - Frozen feature extraction layers
 - Custom classification head
 - Progressive fine-tuning strategy
 
-## Class Imbalance Handling Strategies (Q3)
+## Class Imbalance Handling Strategies
 
 The project implements multiple strategies to handle class imbalance:
 - **Weighted Loss Function**: Class weights [0.1, 3.0, 4.0]
@@ -191,16 +191,10 @@ After training completion, the `results/` directory will contain:
 - **Feature Extraction**: Utilize ImageNet pre-trained features
 - **Efficiency Optimization**: Reduce 94% of training parameters
 
-## Course Requirements Completion
-
-✅ **Q1 (30%)**: Complete custom CNN implementation with parameter statistics and performance evaluation  
-✅ **Q2 (30%)**: ResNet transfer learning implementation with clear trainable parameter count  
-✅ **Q3 (20%)**: Comprehensive class imbalance analysis with visualization charts  
-✅ **Q4 (20%)**: Detailed model comparison and improvement recommendations  
 
 ## Performance Summary
 
-| Metric | Custom CNN (Q1) | ResNet Transfer Learning (Q2) | Improvement |
+| Metric | Custom CNN | ResNet Transfer Learning | Improvement |
 |--------|----------------|------------------------------|-------------|
 | Test Accuracy | 82% | 86% | +4% |
 | Trainable Parameters | 1,636,611 | 264,195 | -84% |
