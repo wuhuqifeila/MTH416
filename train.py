@@ -193,12 +193,6 @@ def train_model(model, train_loader, val_loader, num_epochs, device, model_save_
         print('\nValidation Metrics:')
         print_metrics_summary(val_metrics)
         
-        # 保存混淆矩阵
-        metrics_calculator.plot_confusion_matrix(
-            val_metrics['confusion_matrix'],
-            save_path=os.path.join(save_dir, f'confusion_matrix_epoch_{epoch+1}.png')
-        )
-        
         # 保存最佳模型
         if val_metrics['accuracy'] > best_val_acc:
             best_val_acc = val_metrics['accuracy']
