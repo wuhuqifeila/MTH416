@@ -38,8 +38,8 @@ project/
 
 1. Clone the repository:
 ```bash
-git clone <repository-url>
-cd <repository-name>
+git clone https://github.com/wuhuqifeila/MTH416.git
+cd MTH416
 ```
 
 2. Create a virtual environment (recommended):
